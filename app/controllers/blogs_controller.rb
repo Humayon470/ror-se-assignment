@@ -62,15 +62,15 @@ class BlogsController < ApplicationController
   end
 
   def import
-    file = params[:attachment]
-    data = CSV.parse(file.to_io, headers: true, encoding: 'utf8')
-    # Start code to handle CSV data
-    ActiveRecord::Base.transaction do
-      data.each do |row|
-        current_user.blogs.create!(row.to_h)
-      end
+    #Use interactor for clean arcgitect approach
+    result = ImportBlogsInteractor.call(file: params[:attachment], current_user: current_user)
+
+    if result.success?
+      flash[:notice] = result.flash_message
+    else
+      flash[:error] = result.flash_message
     end
-    # End code to handle CSV data
+
     redirect_to blogs_path
   end
 
